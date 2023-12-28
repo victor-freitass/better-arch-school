@@ -1,0 +1,26 @@
+dps tu altera aqui... n tem mais migrations, faz sim a doc, mas dps de mostrar pro vini na sexta....
+n perde tempo nisso antes. Até mostrar à ele, deixe isso aqui o mais foda possível.
+
+
+
+Create tables:
+
+CREATE TABLE aluno (
+	id SERIAL primary key,
+	name varchar(80)
+);
+
+CREATE TABLE notas (
+    id SERIAL PRIMARY KEY,
+    idaluno integer references aluno (id),
+    n1 real,
+    n2 real,
+    n3 real,
+    n4 real,
+    media real
+);
+
+#API Documentation:
+
+When starting the "teacher" and "student" application, access "http://localhost:3000/api-doc/" 
+to read the documentation and use the project.
