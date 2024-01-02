@@ -18,6 +18,7 @@ class Routes {
         this.router.post('/signin', Signin.signin);
 
         this.router.get('/student', verifyJWT, StudentController.getStudentAllInfos);
+        this.router.get('/perfil', verifyJWT, StudentController.seePerfilByUser_name);
 
         this.router.get('/friends', verifyJWT, FriendsController.getAllFriends);
         this.router.get('/friends/requests', verifyJWT, FriendsController.getAllRequests);

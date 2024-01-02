@@ -98,7 +98,3 @@ class FriendsController {
 }
 
 export default new FriendsController();
-
-/**
- * se x mandou request para y, y n pode mandar request para x... v
- */

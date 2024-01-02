@@ -24,11 +24,6 @@ class App {
 
     routes () { 
         this.express.use(routes);
-
-        this.express.get('/abc', (req, res) => {
-            res.send('Hello World!')
-        })
-
     }
 
     async connection () {

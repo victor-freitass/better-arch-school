@@ -3,7 +3,6 @@ import StudentController from "../controllers/student/studentController";
 import MessageController from "../controllers/messages/messageController";
 import Signin from '../config/auth-validate/auth';
 import { verifyJWT } from "../config/auth-validate/verifyJWT";
-import { JwtPayload } from "jsonwebtoken";
 import SchoolTeamController from "../controllers/school_team/teamController";
 
 class SchoolTeamRoutes {
@@ -23,13 +22,14 @@ class SchoolTeamRoutes {
         this.router.post('/student', verifyJWT, StudentController.create);
         this.router.put('/student/:id', verifyJWT, StudentController.update);
         this.router.get('/student/all', verifyJWT, StudentController.getAll);
+        this.router.get('/student/perfil', verifyJWT, StudentController.seePerfilByEmail);
         this.router.get('/student/:id', verifyJWT, StudentController.getById);
         this.router.delete('/student/:id', verifyJWT, StudentController.del);
 
         this.router.post('/message', verifyJWT, MessageController.create);
         this.router.get('/message', verifyJWT, MessageController.see);
 
-
+        this.router.post('/classes', verifyJWT, StudentController.createClass);
     }   
 }
 
