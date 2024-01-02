@@ -57,7 +57,8 @@ class StudentController {
 
             await client.query(queries.insertStudent, [name, responsible_email]);
 
-            const newStudentId = (await client.query(queries.getNewStudentId)).rows[0].max;
+            const newStudentId = (await client.query(queries.getNewStudentIdByEmail, 
+                [responsible_email])).rows[0].id;
             const media = ((n1 + n2 + n3 + n4 + n5) / 5).toFixed(2);
             whatIsError++;
 
@@ -96,7 +97,9 @@ class StudentController {
 
         } catch (error) {
 
-            const newStudentId = (await client.query(queries.getNewStudentId)).rows[0].max;
+            const newStudentId = (await client.query(queries.getNewStudentIdByEmail, 
+                [responsible_email])).rows[0].id;
+
             if (whatIsError === 1) {
                 await client.query(queries.deleteNewStudent, [newStudentId]);
             }

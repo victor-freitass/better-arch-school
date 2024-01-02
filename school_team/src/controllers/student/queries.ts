@@ -1,6 +1,5 @@
 class Queries {
     insertStudent = 'INSERT INTO student (name, responsible_email) VALUES ($1, $2)';
-    getNewStudentId = 'SELECT MAX(ID) FROM student';
     getNewStudentIdByEmail = 'SELECT id FROM student WHERE responsible_email = $1';
     getById = 'SELECT s.id FROM student s WHERE id = $1';
     getOneById = "SELECT a.*, n.n1, n.n2, n.n3, n.n4, n.media, CASE WHEN n.media < 4 THEN 'REPROVADO' when n.media < 6 THEN 'RECUPERAÇÃO' ELSE 'APROVADO' END AS Avaliacao FROM student a, grades n WHERE a.id = $1 and a.id = n.id_student";
