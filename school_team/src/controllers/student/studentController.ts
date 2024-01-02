@@ -3,9 +3,8 @@ import client from "../../config/database/pgConnection";
 import queries from "./queries";
 import { CustomRequest } from "../../config/auth-validate/verifyJWT";
 import { JwtPayload } from "jsonwebtoken";
-import axios from "axios";
 import bcrypt from "bcrypt";
-import { emailValidator } from "../../config/validators";
+import { emailValidator, imgurValidate } from "../../config/validators";
 
 class StudentController {
 
@@ -47,21 +46,10 @@ class StudentController {
 
         try {
 
-            // TODO Criar aquivo imgurVerify
-            const imgurHost = new URL('', 'https://i.imgur.com/').hostname;
-            const checkProfilePhoto = new URL('', profile_photo).hostname;
-
-            if (imgurHost !== checkProfilePhoto) {
-                return res.status(400).send("Only Imgur photos are allowed. Create a photo there if you don't have.")
-            }
-
-            const validateImage = await axios.get(profile_photo)
-                .then(res => {
-                    return res.status;
-                }).catch(_ => false);
-
-            if (!validateImage || validateImage === 404) {
-                return res.status(400).send('Insert an existing photo from imgur.');
+            try {
+                await imgurValidate(profile_photo);
+            } catch (msg) {
+                return res.status(400).send(msg);
             }
 
             const salt = bcrypt.genSaltSync(10);
@@ -69,12 +57,10 @@ class StudentController {
 
             await client.query(queries.insertStudent, [name, responsible_email]);
 
-            //TODO alterar para email
             const newStudentId = (await client.query(queries.getNewStudentId)).rows[0].max;
             const media = ((n1 + n2 + n3 + n4 + n5) / 5).toFixed(2);
             whatIsError++;
 
-            //insert in class (dps bota o wahtIsError... ja sabe ne, izi.)
             let avarage: number;
             if (!getClass.avarage) {
                 avarage = Number(media);
@@ -171,7 +157,7 @@ class StudentController {
         return res.status(204).send();
     }
 
-    async getAll(req: Request, res: Response) { //any team school can this
+    async getAll(req: Request, res: Response) { 
         const allInfos = (await client.query(queries.getAll)).rows;
         return res.json(allInfos);
     }
@@ -186,7 +172,7 @@ class StudentController {
 
     async del (req: Request, res: Response) {
         const { id } = req.params;
-        const { password } = req.body; //for more security
+        const { password } = req.body;
 
         const office = ((req as CustomRequest).token as JwtPayload).payload.office;
         if (office !== 'director') return res.status(401).send('Just directors can delete a student');
@@ -201,7 +187,6 @@ class StudentController {
             return res.status(401).send('Incorrect password');
         }
 
-        //later use delete on multiple tables
         await client.query(queries.deleteNewGrades, [id]);
         await client.query(queries.deleteSocialMedia, [id]);
         await client.query(queries.deleteById, [id]);        

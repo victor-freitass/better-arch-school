@@ -1,11 +1,11 @@
 import mongoose from "mongoose";
 
 const MessagesSchema = new mongoose.Schema({
-    profile: { //dono do perfil q está recebendo a mensagem.
+    profile: { 
         type: String,
         required: true
     },
-    whoSent: {//de quem enviou
+    whoSent: {
         type: String,
         required: true
     },

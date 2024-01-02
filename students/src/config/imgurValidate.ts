@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-
 async function imgurValidate(url: string): Promise<boolean> {
 
     const imgurHost = new URL('', 'https://i.imgur.com/').hostname;

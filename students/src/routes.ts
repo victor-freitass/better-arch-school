@@ -32,9 +32,6 @@ class Routes {
         this.router.post('/photos', verifyJWT, PhotosController.create);
         this.router.delete('/photos/:id', verifyJWT, PhotosController.deleteById);
         this.router.put('/profilePhoto', verifyJWT, PhotosController.updateProfilePhoto);
-
-        
-        
     }
 }
 

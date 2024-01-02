@@ -62,3 +62,19 @@ create table classes (
 
 When starting the "teacher" and "student" application, access "http://localhost:3000/api-doc/" 
 to read the documentation and use the project.
+
+const imgurHost = new URL('', 'https://i.imgur.com/').hostname;
+            const checkProfilePhoto = new URL('', profile_photo).hostname;
+    
+            if (imgurHost !== checkProfilePhoto) {
+                return res.status(400).send("Only Imgur photos are allowed. Create a photo there if you don't have.")
+            }
+    
+            const validateImage = await axios.get(profile_photo)
+                    .then(res => {
+                        return res.status;
+                    }).catch(_ => false);
+    
+            if (!validateImage || validateImage === 404) {
+                return res.status(400).send('Insert an existing photo from imgur.');
+            }

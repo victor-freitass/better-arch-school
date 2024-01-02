@@ -5,8 +5,6 @@ dotenv.config();
 import SchoolTeamRoutes from './routes/SchoolTeamRoutes';
 import client from './config/database/pgConnection';
 
-//tirei swegger. Se ainda quiser fazer isso, baixa ai. ACho q n vou fazer... n vou perder 30hrs de vida.
-
 import mongoose from 'mongoose';
 const mongoConnection = process.env.MONGO_CONNECTION as string;
 

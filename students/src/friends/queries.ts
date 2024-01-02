@@ -7,7 +7,6 @@ class Queries {
     sendFriendRequest = 'UPDATE student_social_media SET friend_requests = ARRAY_APPEND(friend_requests, $2) WHERE user_name = $1';
     
     removeRequest = 'UPDATE student_social_media SET friend_requests = ARRAY_REMOVE(friend_requests, $2) WHERE user_name = $1';
-
     insert = 'INSERT INTO friends (student_one, student_two) VALUES ($1, $2)';
 }
 

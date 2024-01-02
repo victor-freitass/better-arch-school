@@ -14,7 +14,6 @@ class SchoolTeamRoutes {
     }
 
     routes () {
-
         this.router.post('/signin', Signin.signin);
 
         this.router.post('/newteam-member', verifyJWT, SchoolTeamController.create);
