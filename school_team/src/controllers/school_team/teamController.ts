@@ -68,7 +68,3 @@ class SchoolTeamController {
 }
 
 export default new SchoolTeamController();
-
-/**
- * Bota o imgir valudate e a parada ai
- */

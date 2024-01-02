@@ -9,7 +9,7 @@ interface CustomRequest extends Request {
 }
 
 function verifyJWT (req: Request, res: Response, next: NextFunction) {
-    const token = req.headers['authorization']; //futuramente altere aqui pra poder passar o bearer'!
+    const token = req.headers['authorization']?.replace('Bearer ', ''); 
     let block = false;
 
     if(!token) {

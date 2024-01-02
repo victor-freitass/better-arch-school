@@ -4,6 +4,4 @@ class Queries {
     school_teamPass = 'SELECT st.password FROM school_team st WHERE st.email = $1';
 }
 
-
-
 export default new Queries();

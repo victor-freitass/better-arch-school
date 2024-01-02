@@ -29,6 +29,7 @@ class SchoolTeamRoutes {
         this.router.post('/message', verifyJWT, MessageController.create);
         this.router.get('/message', verifyJWT, MessageController.see);
 
+        this.router.get('/classes', verifyJWT, StudentController.getClasses);
         this.router.post('/classes', verifyJWT, StudentController.createClass);
     }   
 }

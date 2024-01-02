@@ -231,6 +231,11 @@ class StudentController {
         })
     }
 
+    async getClasses (req: Request, res: Response) {
+        const classes = (await client.query(queries.getClasses)).rows;
+        return res.json(classes);
+    }
+
     async seePerfilByEmail (req: Request, res: Response) {
         const { email } = req.body;
 
