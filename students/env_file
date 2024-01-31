@@ -1,9 +1,9 @@
-DB_HOST=localhost
+DB_HOST=postgres-db
 DB_USER=postgres
-DB_NAME=arch_school_2
-DB_PASSWORD=docker
-DB_PORT=5433
+DB_NAME=postgres
+DB_PASSWORD=password
+DB_PORT=5432
 PORT=8080
-MONGO_CONNECTION=mongodb://127.0.0.1:27017/arch_school_2
+MONGO_CONNECTION=mongodb://127.0.0.1:27017/arch_school
 
-AUTHSECRET=asdjs56!@!çkd312431!@@¨&&&
+AUTHSECRET=$!!!$@@@Edsfsddsaasdas2@@@!s465
