@@ -24,6 +24,8 @@ services:
       timeout: 20s
       retries: 5
       start_period: 30s
+    ports:
+      - "5432:5432"
 
   mongo-db: 
     image: mongo
