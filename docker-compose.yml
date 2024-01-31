@@ -1,0 +1,91 @@
+version: '3.8'
+
+networks:
+  school-network:
+    drive: bridge
+
+services:
+  postgres-db: 
+    image: postgres
+    container_name: arch-postgres
+    restart: always
+    networks:
+      - school-network
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 20s
+      retries: 5
+      start_period: 30s
+
+  mongo-db: 
+    image: mongo
+    restart: always
+    container_name: arch-mongo
+    networks:
+      - school-network
+    environment:
+      ME_CONFIG_MONGODB_URL: $ {MONGO_CONNECTION}
+    healthcheck:
+      test: ["CMD","mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - path
+  
+  school-team-api: 
+    build: ./school_team
+    container_name: school-team-api
+    networks:
+      - school-network
+    env_file: ./school_team/.env
+    environment:
+      MONGO_CONNECTION: ${MONGO_CONNECTION}
+      DB_HOST: ${DB_HOST}
+      DB_USER: ${DB_USER}
+      DB_NAME: ${DB_NAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_PORT: ${DB_PORT}
+      PORT: ${PORT}
+      AUTHSECRET: ${AUTHSECRET}
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      mongo-db:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+  students-api: 
+    build: ./students
+    container_name: students-api
+    networks:
+      - school-network
+    env_file: ./students/.env
+    environment:
+      MONGO_CONNECTION: ${MONGO_CONNECTION}
+      DB_HOST: ${DB_HOST}
+      DB_USER: ${DB_USER}
+      DB_NAME: ${DB_NAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_PORT: ${DB_PORT}
+      PORT: ${PORT}
+      AUTHSECRET: ${AUTHSECRET}
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      mongo-db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata: 
+  mongodb:
