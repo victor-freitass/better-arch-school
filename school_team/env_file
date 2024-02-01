@@ -3,7 +3,7 @@ DB_USER=postgres
 DB_NAME=postgres
 DB_PASSWORD=password
 DB_PORT=5432
-PORT=3000
+PORT_TEAM=3000
 
 AUTHSECRET=$!!!$@@@Edsfsddsaasdas2@@@!s465
 
