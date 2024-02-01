@@ -2,7 +2,7 @@ version: '3.8'
 
 networks:
   school-network:
-    drive: bridge
+    driver: bridge
 
 services:
   postgres-db: 
@@ -15,9 +15,6 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-      - ./db:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
       interval: 10s
@@ -34,34 +31,34 @@ services:
     networks:
       - school-network
     environment:
-      ME_CONFIG_MONGODB_URL: $ {MONGO_CONNECTION}
+      MONGO_INITDB_DATABASE: ${MONGO_NAME}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASS}
     healthcheck:
       test: ["CMD","mongo", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 10s
       retries: 5
-    volumes:
-      - path
-  
   school-team-api: 
     build: ./school_team
     container_name: school-team-api
     networks:
       - school-network
-    env_file: ./school_team/.env
     environment:
-      MONGO_CONNECTION: ${MONGO_CONNECTION}
       DB_HOST: ${DB_HOST}
       DB_USER: ${DB_USER}
       DB_NAME: ${DB_NAME}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_PORT: ${DB_PORT}
-      PORT: ${PORT}
+      PORT: ${PORT_TEAM}
       AUTHSECRET: ${AUTHSECRET}
+      MONGO_NAME: ${MONGO_NAME}
+      MONGO_USER: ${MONGO_USER}
+      MONGO_PASS: ${MONGO_PASS}
+      MONGO_PORT: ${MONGO_PORT}
+      MONGO_HOST: ${MONGO_HOST}
     depends_on:
       postgres-db:
-        condition: service_healthy
-      mongo-db:
         condition: service_healthy
     ports:
       - "3000:3000"
@@ -70,24 +67,21 @@ services:
     container_name: students-api
     networks:
       - school-network
-    env_file: ./students/.env
     environment:
-      MONGO_CONNECTION: ${MONGO_CONNECTION}
       DB_HOST: ${DB_HOST}
       DB_USER: ${DB_USER}
       DB_NAME: ${DB_NAME}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_PORT: ${DB_PORT}
-      PORT: ${PORT}
+      PORT: ${PORT_STUDENTS}
       AUTHSECRET: ${AUTHSECRET}
+      MONGO_NAME: ${MONGO_NAME}
+      MONGO_USER: ${MONGO_USER}
+      MONGO_PASS: ${MONGO_PASS}
+      MONGO_PORT: ${MONGO_PORT}
+      MONGO_HOST: ${MONGO_HOST}
     depends_on:
       postgres-db:
         condition: service_healthy
-      mongo-db:
-        condition: service_healthy
     ports:
       - "8080:8080"
-
-volumes:
-  pgdata: 
-  mongodb:
