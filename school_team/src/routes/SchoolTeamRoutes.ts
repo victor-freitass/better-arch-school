@@ -3,6 +3,7 @@ import StudentController from "../controllers/student/studentController";
 import MessageController from "../controllers/messages/messageController";
 import Signin from '../config/auth-validate/auth';
 import { verifyJWT } from "../config/auth-validate/verifyJWT";
+import { verifyJWTCreateTeam } from "../config/auth-validate/verifyCreateTeam";
 import SchoolTeamController from "../controllers/school_team/teamController";
 
 class SchoolTeamRoutes {
@@ -16,7 +17,7 @@ class SchoolTeamRoutes {
     routes () {
         this.router.post('/signin', Signin.signin);
 
-        this.router.post('/newteam-member', verifyJWT, SchoolTeamController.create);
+        this.router.post('/newteam-member', verifyJWTCreateTeam, SchoolTeamController.create);
 
         this.router.post('/student', verifyJWT, StudentController.create);
         this.router.put('/student/:id', verifyJWT, StudentController.update);

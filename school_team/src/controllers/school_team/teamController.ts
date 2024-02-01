@@ -16,7 +16,9 @@ class SchoolTeamController {
         try {
 
             const token = (req as CustomRequest).token;
-            const officeValidate = (token as JwtPayload).payload.office;
+
+            const officeValidate = token !== 'BOSS' ?  
+            (token as JwtPayload).payload.office : 'director';
 
             if (officeValidate === 'teacher') {
                 return res.status(401).send('Teachers are not allowed to insert someone. Just directors and coordinators');
