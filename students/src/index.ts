@@ -31,7 +31,7 @@ class App {
             console.log('Connected to MongoDB');
             client.connect().then(_ => {
                 console.log('Connected to Postgres');
-                this.express.listen(process.env.PORT, () => console.log('Student API on...'));
+                this.express.listen(process.env.PORT_STUDENTS, () => console.log('Student API on...'));
             }).catch(err => console.log(err));
         }).catch(err => console.log(err));
     }
