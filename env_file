@@ -21,3 +21,5 @@ DB_PASSWORD=password
 DB_PORT=5432
 PORT_STUDENTS=8080
 PORT_TEAM=3000 
+
+BOSS_PASSWORD=firstSchoolDirector-schoolFounder
