@@ -16,10 +16,16 @@ class StudentController {
             return res.status(401).send('Teachers are not allowed to insert someone. Just directors and coordinators.');
         }
 
-        if (!name || !responsible_email || !n1 || !n2 || !n3 || !n4 || !n5
-            || !student_class || !user_name || !email || !password || !profile_photo) {
-            return res.status(400).send('Set all infos');
-        }
+        //to accept grades = 0, and verify all input
+        if (
+            !(
+                name && responsible_email && student_class && user_name &&
+                email && password && profile_photo &&
+                (n1 || n1 === 0) &&
+                (n2 || n2 === 0) &&
+                (n3 || n3 === 0) &&
+                (n4 || n4 === 0))
+        ) return ('Set all Infos');
 
         const getClass = (await client.query(queries.verifyClass, [student_class])).rows[0];
         if (!getClass) return res.status(400).send('Non-existing class');
@@ -40,6 +46,7 @@ class StudentController {
 
         if (verifyUserName || verifyUserName2 || verifyEmail) return res.status(400).send('Email or user name already exists');
         if (verifyResponsibleEmail) return res.status(400).send('The same responsible email is not allowed');
+        if (bio && bio.length > 30) return res.status(400).send('bio > 30 not allowed');
 
         let whatIsError = 0;
         let rollbackClassAvarage = 0;
@@ -140,9 +147,13 @@ class StudentController {
         const office = ((req as CustomRequest).token as JwtPayload).payload.office;
         if (office !== 'director') return res.status(401).send('Only directors can change grades');
 
-        if (!n1 || !n2 || !n3 || !n4 || !n5) {
-            return res.status(400).send('Set all the notes to update');
-        }
+        if (
+            !(
+                (n1 || n1 === 0) &&
+                (n2 || n2 === 0) &&
+                (n3 || n3 === 0) &&
+                (n4 || n4 === 0))
+        ) return ('Set all grades to update');
 
         try {
             if (!((await client.query(queries.getById, [id])).rows[0])) {
@@ -190,9 +201,17 @@ class StudentController {
             return res.status(401).send('Incorrect password');
         }
 
-        await client.query(queries.deleteNewGrades, [id]);
+        const student = (await client.query(queries.getById, [id])).rows[0];
+        if (!student) return res.status(404).send();
+
+        //performance in promises
+        Promise.all([
+            client.query(queries.deleteNewGrades, [id]), 
+            client.query(queries.deleteStudentFriendsTable, [id]),
+            client.query(queries.deleteStudentPhotos, [student.user_name])
+        ]);
         await client.query(queries.deleteSocialMedia, [id]);
-        await client.query(queries.deleteById, [id]);        
+        await client.query(queries.deleteById, [id]);  
 
         return res.status(204).send();
     }

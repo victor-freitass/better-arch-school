@@ -30,6 +30,8 @@ class Queries {
     deleteNewGrades = 'DELETE FROM grades WHERE id_student = $1';
     deleteSocialMedia = 'DELETE FROM student_social_media WHERE student_id = $1'
     deleteById = 'DELETE FROM student WHERE id = $1';
+    deleteStudentFriendsTable = 'DELETE FROM friends WHERE student_one = $1 or student_two = $1';
+    deleteStudentPhotos = 'DELETE FROM photos WHERE user_name = $1';
 
     getAll = "SELECT a.*, n.n1, n.n2, n.n3, n.n4, n.media, CASE WHEN n.media < 4 THEN 'REPROVADO' when n.media < 6 THEN 'RECUPERAÇÃO' ELSE 'APROVADO' END AS Avaliacao FROM student a, grades n WHERE a.id  = n.id_student";
     getStudentPerfil = 'SELECT user_name, profile_photo, bio FROM student_social_media WHERE email = $1';
