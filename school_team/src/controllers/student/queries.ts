@@ -38,6 +38,7 @@ class Queries {
     getTeamPerfil = 'SELECT user_name, profile_photo FROM school_team WHERE email = $1';
 
     getClasses = 'SELECT * FROM classes';
+    studentGrade = 'SELECT media FROM grades WHERE id_student = $1';
 }
 
 export default new Queries();

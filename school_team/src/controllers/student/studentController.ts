@@ -73,21 +73,16 @@ class StudentController {
             if (!getClass.avarage) {
                 avarage = Number(media);
             } else {
-                const studentsId = (await client.query(queries.getClassStudents, 
-                    [student_class])).rows[0].students_id;
-
-                let classStudentsMediaSum = 0;
-
-                const promises = studentsId.map(async (id: number | string) => {
-                    let result = await client.query(queries.getStudentMediaById, [id]);
-                    classStudentsMediaSum += result.rows[0].media;
+                const promises = getClass.students_id.map(async (id:number) => {
+                    const result = await client.query(queries.studentGrade, [id]);
+                    return result.rows[0].media;
                 });
+                
+                const grades = await Promise.all(promises);
+                let classGradeSum = grades.reduce((sum, grade) => sum + grade, 0);
 
-                rollbackClassAvarage = classStudentsMediaSum;
-                await Promise.all(promises);
-
-                classStudentsMediaSum += Number(media); 
-                avarage = Number((classStudentsMediaSum / (getClass.student_count + 1)).toFixed(2));
+                classGradeSum += Number(media);
+                avarage = classGradeSum / (getClass.students_id.length + 1);
             }    
 
             const student_id = (await client.query(queries.getNewStudentIdByEmail, 
