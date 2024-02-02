@@ -230,8 +230,6 @@ class StudentController {
         const studentPerfil = (await client.query(queries.getStudentPerfil, [email])).rows[0];
         const teamPerfil = (await client.query(queries.getTeamPerfil, [email])).rows[0];
 
-        if(!studentPerfil.bio) delete studentPerfil.bio;
-         
         return studentPerfil ? res.json(studentPerfil) : res.json(teamPerfil || 'Not found');
     }
 };
