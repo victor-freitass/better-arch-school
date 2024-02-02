@@ -25,6 +25,9 @@ class MessageController {
 
         const requesterUser_name = ((req as CustomRequest).token as JwtPayload).payload.user_name;
 
+        const findUser_name = (await client.query(queries.getUserName, [whoWillReceive])).rows[0];
+        if (!findUser_name) return res.status(404).send();
+
         const verifyIfIsTeam = (await client.query(queries.verifyIfIsTeam, [whoWillReceive])).rows[0];
         const friends = (await client.query(queries.verifyFriends, [requesterUser_name, whoWillReceive])).rows[0];
         if (!verifyIfIsTeam && !friends) return res.status(400).send("You are not friends. Send a friend request first.");
