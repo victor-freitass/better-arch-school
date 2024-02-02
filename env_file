@@ -1,0 +1,25 @@
+AUTHSECRET=$!!!$@@@Edsfsddsaasdas2@@@!s465
+
+# postgres
+POSTGRES_USER=postgres
+POSTGRES_DB=postgres
+POSTGRES_PASSWORD=password
+
+# mongo
+MONGO_NAME=school
+MONGO_USER=school_user
+MONGO_PASS=school_pass
+
+MONGO_PORT=27017
+MONGO_HOST=mongo-db
+
+# api's
+DB_HOST=postgres-db
+DB_USER=postgres
+DB_NAME=postgres
+DB_PASSWORD=password
+DB_PORT=5432
+PORT_STUDENTS=8080
+PORT_TEAM=3000 
+
+BOSS_PASSWORD=firstSchoolDirector-schoolFounder

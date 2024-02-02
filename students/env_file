@@ -1,0 +1,16 @@
+DB_HOST=postgres-db
+DB_USER=postgres
+DB_NAME=postgres
+DB_PASSWORD=password
+DB_PORT=5432
+PORT_STUDENTS=8080
+
+AUTHSECRET=$!!!$@@@Edsfsddsaasdas2@@@!s465
+
+# mongo
+MONGO_NAME=school
+MONGO_USER=school_user
+MONGO_PASS=school_pass
+
+MONGO_PORT=27017
+MONGO_HOST=mongo-db

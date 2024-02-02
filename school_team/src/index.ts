@@ -6,7 +6,8 @@ import SchoolTeamRoutes from './routes/SchoolTeamRoutes';
 import client from './config/database/pgConnection';
 
 import mongoose from 'mongoose';
-const mongoConnection = process.env.MONGO_CONNECTION as string;
+
+const { MONGO_USER, MONGO_PASS, MONGO_HOST, MONGO_PORT, MONGO_NAME } = process.env;
 
 class App { 
     express: Express;
@@ -27,11 +28,13 @@ class App {
     }
 
     async connection () {
-        mongoose.connect(mongoConnection).then(_ => {
+        mongoose.connect(`mongodb://${MONGO_USER}:${MONGO_PASS}@${MONGO_HOST}:${MONGO_PORT}/${MONGO_NAME}?authSource=admin`)
+        .then(_ => {
+
             console.log('Connected to MongoDB');
             client.connect().then(_ => {
                 console.log('Connected to Postgres');
-                this.express.listen(process.env.PORT, () => console.log('School_team API on...'));
+                this.express.listen(process.env.PORT_TEAM, () => console.log('School_team API on...'));
             }).catch(err => console.log(err));
         }).catch(err => console.log(err));
     }
