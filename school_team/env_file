@@ -13,4 +13,6 @@ MONGO_USER=school_user
 MONGO_PASS=school_pass
 
 MONGO_PORT=27017
-MONGO_HOST=localhost
+MONGO_HOST=mongo-db
+
+BOSS_PASSWORD=firstSchoolDirector-schoolFounder
