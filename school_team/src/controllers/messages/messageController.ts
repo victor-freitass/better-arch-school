@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { CustomRequest } from "../../config/auth-validate/verifyJWT";
 import Messages from "../../config/database/mongoose/models/Messages";
 import { JwtPayload } from "jsonwebtoken";
+import client from "../../config/database/pgConnection";
 
 interface MessageType {
     profile: string;
@@ -21,6 +22,12 @@ class MessageController {
 
         const { whoWillReceive, message } = req.body;
         if (!whoWillReceive || !message) return res.status(400).send('Set who will receive and the message');
+
+        const findUser_name = (await client
+            .query('SELECT * FROM student_social_media sm, school_team st WHERE sm.user_name = $1 or st.user_name = $1', 
+                [whoWillReceive])).rows[0];
+
+        if (!findUser_name) return res.status(404).send();
 
         const newMessage: MessageType = {
             profile: whoWillReceive,
