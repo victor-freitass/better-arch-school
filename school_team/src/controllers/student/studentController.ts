@@ -199,16 +199,34 @@ class StudentController {
         const student = (await client.query(queries.getById, [id])).rows[0];
         if (!student) return res.status(404).send();
 
-        //performance in promises
-        Promise.all([
-            client.query(queries.deleteNewGrades, [id]), 
-            client.query(queries.deleteStudentFriendsTable, [id]),
-            client.query(queries.deleteStudentPhotos, [student.user_name])
-        ]);
-        await client.query(queries.deleteSocialMedia, [id]);
-        await client.query(queries.deleteById, [id]);  
+        //Deleting - Performance promises
+        try {
+            await Promise.all([
+                client.query(queries.deleteNewGrades, [id]), 
+                client.query(queries.deleteStudentFriendsTable, [id]),
+                client.query(queries.deleteStudentPhotos, [student.user_name]),
+                client.query(queries.delStudentInClass, [id])
+            ]);
+            await client.query(queries.deleteSocialMedia, [id]);
+            await client.query(queries.deleteById, [id]);  
+    
+            const getClass = (await client.query(queries.getStudentClassById, [id])).rows[0];
 
-        return res.status(204).send();
+            let classGradeSum = 0;
+            for (let i = 0 ; i < getClass.students_id ; i++) {
+                classGradeSum += (await client.query(queries.studentGrade, 
+                    getClass.students_id[i])).rows[0].media;
+                console.log(classGradeSum);
+            }
+            console.log(classGradeSum);
+            const updatedAvarage = classGradeSum / getClass.students_id.length;
+            await client.query(queries.updateClassBecauseDelete, [updatedAvarage]);
+    
+            return res.status(204).send();
+        } catch (e) {
+            console.log(e);
+            return res.status(500).send();
+        }
     }
 
     async createClass (req: Request, res: Response) {
@@ -244,7 +262,12 @@ class StudentController {
         const studentPerfil = (await client.query(queries.getStudentPerfil, [email])).rows[0];
         const teamPerfil = (await client.query(queries.getTeamPerfil, [email])).rows[0];
 
-        return studentPerfil ? res.json(studentPerfil) : res.json(teamPerfil || 'Not found');
+        if (studentPerfil) return res.json(studentPerfil);
+        if (teamPerfil) {
+            return res.json(teamPerfil)
+        } else {
+            return res.status(404).send()
+        }
     }
 };
 

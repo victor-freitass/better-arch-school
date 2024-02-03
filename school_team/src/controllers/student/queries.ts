@@ -39,6 +39,9 @@ class Queries {
 
     getClasses = 'SELECT * FROM classes';
     studentGrade = 'SELECT media FROM grades WHERE id_student = $1';
+    delStudentInClass = 'SELECT ARRAY_REMOVE(students_id, $1) from classes';
+    getStudentClassById = 'SELECT * FROM classes WHERE $1 = ANY (students_id)';
+    updateClassBecauseDelete = 'UPDATE classes SET student_count = student_count -1, avarage = $1';
 }
 
 export default new Queries();
