@@ -23,11 +23,11 @@ class MessageController {
         const { whoWillReceive, message } = req.body;
         if (!whoWillReceive || !message) return res.status(400).send('Set who will receive and the message');
 
-        const findUser_name = (await client
-            .query('SELECT * FROM student_social_media sm, school_team st WHERE sm.user_name = $1 or st.user_name = $1', 
-                [whoWillReceive])).rows[0];
-
-        if (!findUser_name) return res.status(404).send();
+        const [ findStudent, findTeam ] = await Promise.all([
+            client.query('SELECT * FROM student_social_media WHERE user_name = $1', [whoWillReceive]),
+            client.query('SELECT * FROM school_team WHERE user_name = $1', [whoWillReceive]),
+        ]);
+        if (!findStudent.rows[0] || !findTeam.rows[0]) return res.status(404).send();
 
         const newMessage: MessageType = {
             profile: whoWillReceive,
