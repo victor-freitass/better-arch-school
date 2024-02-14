@@ -48,7 +48,7 @@ class StudentController {
         if (verifyResponsibleEmail) return res.status(400).send('The same responsible email is not allowed');
         if (bio && bio.length > 30) return res.status(400).send('bio > 30 not allowed');
 
-        let whatIsError = 0;
+        let whatIsError = 0; //If an error occurs when creating the student. Marking checkpoints...
         let rollbackClassAvarage = 0;
 
         try {
@@ -63,18 +63,20 @@ class StudentController {
             const passEncrypted = bcrypt.hashSync(password, salt);
 
             await client.query(queries.insertStudent, [name, responsible_email]);
+            whatIsError++;
 
             const newStudentId = (await client.query(queries.getNewStudentIdByEmail, 
                 [responsible_email])).rows[0].id;
             const media = ((n1 + n2 + n3 + n4 + n5) / 5).toFixed(2);
-            whatIsError++;
 
             let avarage: number;
             if (!getClass.avarage) {
                 avarage = Number(media);
             } else {
                 const promises = getClass.students_id.map(async (id:number) => {
+                    console.log(id)
                     const result = await client.query(queries.studentGrade, [id]);
+                    console.log(result.rows)
                     return result.rows[0].media;
                 });
                 
@@ -88,7 +90,9 @@ class StudentController {
             const student_id = (await client.query(queries.getNewStudentIdByEmail, 
                 [responsible_email])).rows[0].id;
     
-            await client.query(queries.updateClass, [student_class, avarage, student_id]);
+            getClass.student_count ?  
+            await client.query(queries.updateClass, [student_class, avarage, student_id]) :
+            await client.query(queries.updateClassFirstStudent, [student_class, avarage, student_id]); 
             whatIsError++;
 
             await client.query(queries.insertGrades, [newStudentId, n1, n2, n3, n4, n5, media]);
@@ -104,6 +108,8 @@ class StudentController {
 
             if (whatIsError === 1) {
                 await client.query(queries.deleteNewStudent, [newStudentId]);
+                console.log(error);
+                return res.status(500).send();
             }
 
             const student_id = (await client.query(queries.getNewStudentIdByEmail, 
@@ -115,9 +121,9 @@ class StudentController {
             const rollbackAvarage = rollbackClassAvarage / classStudentCount.length
 
 
-            if(whatIsError === 2) {
+            if(whatIsError === 2) { 
                 await client.query(queries.updateClassBecauseError, 
-                    [rollbackAvarage, getNewArrayToUpdate, student_class]);
+                    [getClass.avarage, getNewArrayToUpdate, student_class]);
                 await client.query(queries.deleteNewStudent, [newStudentId]);
             }
 
@@ -129,7 +135,7 @@ class StudentController {
             }
 
             console.log(error);
-            return res.status(500).send('Sorry, Internal Server Error');
+            return res.status(500).send();
         };
 
         return res.status(201).json('Student Created Successfully');
@@ -138,7 +144,8 @@ class StudentController {
     async update(req: Request, res: Response) {
         const { id } = req.params;
         const { n1, n2, n3, n4, n5 } = req.body;
-
+        if (Number.isNaN(Number(id))) return res.status(400).send('Only numbers are allowed');
+        
         const office = ((req as CustomRequest).token as JwtPayload).payload.office;
         if (office !== 'director') return res.status(401).send('Only directors can change grades');
 
@@ -173,6 +180,7 @@ class StudentController {
 
     async getById (req: Request, res: Response) {
         const { id } = req.params;
+        if (Number.isNaN(Number(id))) return res.status(400).send('Only numbers are allowed');
 
         const student = (await client.query(queries.getOneById, [id])).rows[0];
         if(!student) return res.status(400).send('Student not exists');
@@ -182,6 +190,7 @@ class StudentController {
     async del (req: Request, res: Response) {
         const { id } = req.params;
         const { password } = req.body;
+        if (Number.isNaN(Number(id))) return res.status(400).send('Only numbers are allowed');
 
         const office = ((req as CustomRequest).token as JwtPayload).payload.office;
         if (office !== 'director') return res.status(401).send('Just directors can delete a student');
@@ -196,31 +205,37 @@ class StudentController {
             return res.status(401).send('Incorrect password');
         }
 
-        const student = (await client.query(queries.getById, [id])).rows[0];
+        const student = (await client.query(queries.getStudentUser_name, [id])).rows[0];
         if (!student) return res.status(404).send();
+
+        const getClass = (await client.query(queries.getStudentClassById, [id])).rows[0];
+
+        const students_idWithoutStudent = (await client
+            .query(queries.removeStudentOfTheArray, [id])).rows[0].array_remove;
 
         //Deleting - Performance promises
         try {
             await Promise.all([
                 client.query(queries.deleteNewGrades, [id]), 
-                client.query(queries.deleteStudentFriendsTable, [id]),
                 client.query(queries.deleteStudentPhotos, [student.user_name]),
-                client.query(queries.delStudentInClass, [id])
-            ]);
-            await client.query(queries.deleteSocialMedia, [id]);
-            await client.query(queries.deleteById, [id]);  
-    
-            const getClass = (await client.query(queries.getStudentClassById, [id])).rows[0];
+                client.query(queries.deleteStudentFriendsTable, [student.user_name]),
+                client.query(queries.updateClassBecauseDelete, 
+                    [getClass.name, students_idWithoutStudent])
+            ]).then(results => {
+                results[3];//?
+            });
 
             let classGradeSum = 0;
-            for (let i = 0 ; i < getClass.students_id ; i++) {
-                classGradeSum += (await client.query(queries.studentGrade, 
-                    getClass.students_id[i])).rows[0].media;
-                console.log(classGradeSum);
+            for (let i = 0; i < getClass.students_id.length; i++) {
+                console.log(getClass.students_id[i])
+                classGradeSum += (await client.query(queries.studentGrade,
+                    [getClass.students_id[i]])).rows[0].media;
             }
-            console.log(classGradeSum);
             const updatedAvarage = classGradeSum / getClass.students_id.length;
-            await client.query(queries.updateClassBecauseDelete, [updatedAvarage]);
+            await client.query(queries.updateClassAvarage, [getClass.name, updatedAvarage]);
+
+            await client.query(queries.deleteSocialMedia, [id]);
+            await client.query(queries.deleteById, [id]);  
     
             return res.status(204).send();
         } catch (e) {

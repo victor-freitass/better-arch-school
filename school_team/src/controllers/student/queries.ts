@@ -3,6 +3,7 @@ class Queries {
     getNewStudentIdByEmail = 'SELECT id FROM student WHERE responsible_email = $1';
     getById = 'SELECT s.id FROM student s WHERE id = $1';
     getOneById = "SELECT a.*, n.n1, n.n2, n.n3, n.n4, n.media, CASE WHEN n.media < 4 THEN 'REPROVADO' when n.media < 6 THEN 'RECUPERAÇÃO' ELSE 'APROVADO' END AS Avaliacao FROM student a, grades n WHERE a.id = $1 and a.id = n.id_student";
+    getStudentUser_name = 'SELECT user_name FROM student_social_media WHERE student_id = $1';
 
     classesCount = 'SELECT * FROM classes';
     createNewClass = 'INSERT INTO classes (name) VALUES ($1)';
@@ -21,6 +22,8 @@ class Queries {
     getClassStudents = 'SELECT students_id FROM classes WHERE name = $1';
     getStudentMediaById = 'SELECT media FROM grades WHERE id_student = $1';
     updateClass = "UPDATE classes SET student_count = student_count + 1, avarage = $2, students_id = ARRAY_APPEND(students_id, $3) WHERE name = $1";
+    updateClassFirstStudent = 'UPDATE classes SET student_count = 1, avarage = $2, students_id = ARRAY_APPEND(students_id, $3) WHERE name = $1';
+    findStudentClass = 'SELECT name FROM classes WHERE $1 = ANY (students_id);';
 
     updateGrades = 'UPDATE grades SET n1 = $2, n2 = $3, n3 = $4, n4 = $5, n5 = $6, media = $7 WHERE id_student = $1';
 
@@ -39,9 +42,10 @@ class Queries {
 
     getClasses = 'SELECT * FROM classes';
     studentGrade = 'SELECT media FROM grades WHERE id_student = $1';
-    delStudentInClass = 'SELECT ARRAY_REMOVE(students_id, $1) from classes';
+    removeStudentOfTheArray = 'SELECT ARRAY_REMOVE(students_id, $1) from classes';
     getStudentClassById = 'SELECT * FROM classes WHERE $1 = ANY (students_id)';
-    updateClassBecauseDelete = 'UPDATE classes SET student_count = student_count -1, avarage = $1';
+    updateClassBecauseDelete = 'UPDATE classes SET student_count = student_count -1, students_id = $2 WHERE name = $1';
+    updateClassAvarage = 'UPDATE classes SET avarage = $2 WHERE name = $1';
 }
 
 export default new Queries();
