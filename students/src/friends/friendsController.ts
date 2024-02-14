@@ -76,11 +76,9 @@ class FriendsController {
         const requests = (await client.query(queries.getFriendRequests, 
             [requesterUser_name])).rows[0].friend_requests;
 
-        //faz a parada da promise.
         let thisReqExists = false;
         if (requests) {
             requests.forEach(async (user_name: string) => {
-                console.log(user_name, user_nameToRequestAccept);
                 if (user_name === user_nameToRequestAccept) {
                     thisReqExists = true;
                     await client.query(queries.removeRequest, 
