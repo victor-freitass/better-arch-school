@@ -27,7 +27,7 @@ class MessageController {
             client.query('SELECT * FROM student_social_media WHERE user_name = $1', [whoWillReceive]),
             client.query('SELECT * FROM school_team WHERE user_name = $1', [whoWillReceive]),
         ]);
-        if (!findStudent.rows[0] || !findTeam.rows[0]) return res.status(404).send();
+        if (!findStudent.rows[0] && !findTeam.rows[0]) return res.status(404).send();
 
         const newMessage: MessageType = {
             profile: whoWillReceive,
