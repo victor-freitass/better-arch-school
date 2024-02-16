@@ -1,10 +1,9 @@
 import { Request, Response } from "express";
 import client from "../../config/database/pgConnection";
 import queries from "./queries";
-import axios from "axios";
 import bcrypt from 'bcrypt';
 import { emailValidator, imgurValidate } from "../../config/validators";
-import { verifyJWT, CustomRequest } from "../../config/auth-validate/verifyJWT";
+import { CustomRequest } from "../../config/auth-validate/verifyJWT";
 import { JwtPayload } from "jsonwebtoken";
 
 
@@ -31,12 +30,20 @@ class SchoolTeamController {
             if (office !== 'teacher' && office !== 'director' && office !== 'coordinator' ) {
                 return res.status(400).send("Values Allowed: 'teacher' or 'coordinator' or 'director'");
             }
+            
+            const [
+                checkEmail1, 
+                checkEmail2, 
+                checkUserName1, 
+                checkUserName2
+            ] = await Promise.all([
+                (await client.query(queries.getEmailFromDB, [email])).rows[0],
+                (await client.query(queries.getEmailFromSocialMediaDB, [email])).rows[0],
+                (await client.query(queries.getUser_nameFromDB, [user_name])).rows[0],
+                (await client.query(queries.getUser_nameFromSocialMEdiaDB, [user_name])).rows[0]
+            ]);
 
-            const verifyEmail = (await client.query(queries.getEmailFromDB, [email])).rows[0];
-            const verifyUserName = (await client.query(queries.getUser_nameFromDB, [user_name])).rows[0];
-            const verifyUserName2 = (await client.query(queries.checkIfExistsUser_nameInStudentDB, [user_name])).rows[0]
-
-            if (verifyEmail || verifyUserName2 || verifyUserName) return res.status(400).send('Email or user name already exists');
+            if (checkEmail1 || checkEmail2 || checkUserName1 || checkUserName2) return res.status(400).send('Email or user name already exists');
             
             if (!emailValidator(email)) return res.status(400).send('Invalid email');
 
