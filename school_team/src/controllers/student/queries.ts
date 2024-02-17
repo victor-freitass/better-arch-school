@@ -42,7 +42,7 @@ class Queries {
 
     getClasses = 'SELECT * FROM classes';
     studentGrade = 'SELECT media FROM grades WHERE id_student = $1';
-    removeStudentOfTheArray = 'SELECT ARRAY_REMOVE(students_id, $1) from classes';
+    removeStudentOfTheArray = 'SELECT ARRAY_REMOVE(students_id, $1) FROM classes WHERE name = $2';
     getStudentClassById = 'SELECT * FROM classes WHERE $1 = ANY (students_id)';
     updateClassBecauseDelete = 'UPDATE classes SET student_count = student_count -1, students_id = $2 WHERE name = $1';
     updateClassAvarage = 'UPDATE classes SET avarage = $2 WHERE name = $1';

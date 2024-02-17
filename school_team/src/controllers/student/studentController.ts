@@ -209,34 +209,35 @@ class StudentController {
         if (!student) return res.status(404).send();
 
         const getClass = (await client.query(queries.getStudentClassById, [id])).rows[0];
-
         const students_idWithoutStudent = (await client
-            .query(queries.removeStudentOfTheArray, [id])).rows[0].array_remove;
-
+            .query(queries.removeStudentOfTheArray, [id, getClass.name])).rows[0].array_remove;
+          
         //Deleting - Performance promises
-        try {
+        try {  
             await Promise.all([
                 client.query(queries.deleteNewGrades, [id]), 
                 client.query(queries.deleteStudentPhotos, [student.user_name]),
                 client.query(queries.deleteStudentFriendsTable, [student.user_name]),
                 client.query(queries.updateClassBecauseDelete, 
                     [getClass.name, students_idWithoutStudent])
-            ]).then(results => {
-                results[3];//?
-            });
+            ]);
 
-            let classGradeSum = 0;
-            for (let i = 0; i < getClass.students_id.length; i++) {
-                console.log(getClass.students_id[i])
-                classGradeSum += (await client.query(queries.studentGrade,
-                    [getClass.students_id[i]])).rows[0].media;
+            if (!students_idWithoutStudent) {
+                await client.query(queries.updateClassAvarage, [getClass.name, 0]);
+
+            } else {
+                let classGradeSum = 0;
+                for (let i = 0; i < students_idWithoutStudent.length; i++) {
+                    classGradeSum += (await client.query(queries.studentGrade,
+                        [students_idWithoutStudent[i]])).rows[0].media;
+                }
+
+                const updatedAvarage = classGradeSum / students_idWithoutStudent.length;
+                await client.query(queries.updateClassAvarage, [getClass.name, updatedAvarage]);
             }
-            const updatedAvarage = classGradeSum / getClass.students_id.length;
-            await client.query(queries.updateClassAvarage, [getClass.name, updatedAvarage]);
-
             await client.query(queries.deleteSocialMedia, [id]);
-            await client.query(queries.deleteById, [id]);  
-    
+            await client.query(queries.deleteById, [id]);
+
             return res.status(204).send();
         } catch (e) {
             console.log(e);
