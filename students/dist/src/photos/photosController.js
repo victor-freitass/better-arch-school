@@ -41,11 +41,17 @@ class PhotoController {
             return res.status(201).send('Photo published successfully!');
         });
     }
-    getAll(req, res) {
+    getUserPhotos(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const user_name = req.token.payload.user_name;
-            const allPhotos = (yield pgConnection_1.default.query(queries_1.default.getAll, [user_name])).rows;
+            const allPhotos = (yield pgConnection_1.default.query(queries_1.default.getUserPhotos, [user_name])).rows;
             return res.json(allPhotos);
+        });
+    }
+    getAll(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const userPhotos = (yield pgConnection_1.default.query(queries_1.default.getAll)).rows;
+            return res.json(userPhotos);
         });
     }
     deleteById(req, res) {
@@ -70,9 +76,7 @@ class PhotoController {
             catch (msg) {
                 return res.status(400).send(msg);
             }
-            const upResponse = (yield pgConnection_1.default.query(queries_1.default.updateProfile, [url, user_name])).rows[0];
-            if (!upResponse)
-                return res.status(404).send();
+            yield pgConnection_1.default.query(queries_1.default.updateProfile, [url, user_name]);
             return res.status(204).send('Profile photo updated successfully');
         });
     }

@@ -23,7 +23,7 @@ class FriendsController {
                 return res.status(400).send('Set user_name to friend request');
             const checkIfExists = (yield pgConnection_1.default.query(queries_1.default.checkIfExists, [user_nameToRequestFriend])).rows[0];
             if (!checkIfExists)
-                return res.status(400).send('This student not exists');
+                return res.status(404).send();
             const alreadyAreFriends = (yield pgConnection_1.default.query(queries_1.default.checkAlreadyFriends, [requesterUser_name, user_nameToRequestFriend])).rows[0];
             if (alreadyAreFriends)
                 return res.status(400).send('You are already friends');
@@ -54,7 +54,7 @@ class FriendsController {
         return __awaiter(this, void 0, void 0, function* () {
             const requesterUser_name = req.token.payload.user_name;
             const requests = (yield pgConnection_1.default.query(queries_1.default.getFriendRequests, [requesterUser_name])).rows;
-            return res.json(requests[0].friend_requests || 'No requests now');
+            return res.json(requests[0].friend_requests);
         });
     }
     getAllFriends(req, res) {
@@ -92,7 +92,7 @@ class FriendsController {
                 return res.status(400).send('No one pending request for you');
             }
             if (!thisReqExists)
-                return res.status(400).send('This friend request not exists');
+                return res.status(404).send('This friend request not exists');
             return res.status(201).send('Request accepted');
         });
     }

@@ -20,7 +20,14 @@ function verifyJWTCreateTeam(req, res, next) {
         req.token = 'BOSS';
         return next();
     }
-    const token = (_a = req.headers['authorization']) === null || _a === void 0 ? void 0 : _a.replace('Bearer ', '');
+    let token;
+    const auth = (req.headers['auth']); //In Swagger 
+    if (typeof auth === "string") {
+        token = auth.replace('Bearer ', '');
+    }
+    else {
+        token = ((_a = req.headers['authorization']) === null || _a === void 0 ? void 0 : _a.replace('Bearer ', ''));
+    }
     let block = false;
     if (!token) {
         return res.status(401).send('Without Token');

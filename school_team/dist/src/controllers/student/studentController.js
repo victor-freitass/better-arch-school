@@ -71,9 +71,7 @@ class StudentController {
                 }
                 else {
                     const promises = getClass.students_id.map((id) => __awaiter(this, void 0, void 0, function* () {
-                        console.log(id);
                         const result = yield pgConnection_1.default.query(queries_1.default.studentGrade, [id]);
-                        console.log(result.rows);
                         return result.rows[0].media;
                     }));
                     const grades = yield Promise.all(promises);
@@ -95,7 +93,6 @@ class StudentController {
                 const newStudentId = (yield pgConnection_1.default.query(queries_1.default.getNewStudentIdByEmail, [responsible_email])).rows[0].id;
                 if (whatIsError === 1) {
                     yield pgConnection_1.default.query(queries_1.default.deleteNewStudent, [newStudentId]);
-                    console.log(error);
                     return res.status(500).send();
                 }
                 const student_id = (yield pgConnection_1.default.query(queries_1.default.getNewStudentIdByEmail, [responsible_email])).rows[0].id;
@@ -126,17 +123,37 @@ class StudentController {
             const office = req.token.payload.office;
             if (office !== 'director')
                 return res.status(401).send('Only directors can change grades');
-            if (!((n1 || n1 === 0) &&
-                (n2 || n2 === 0) &&
-                (n3 || n3 === 0) &&
-                (n4 || n4 === 0)))
-                return ('Set all grades to update');
+            if ((typeof n1 === 'undefined' || n1 === null) ||
+                (typeof n2 === 'undefined' || n2 === null) ||
+                (typeof n3 === 'undefined' || n3 === null) ||
+                (typeof n4 === 'undefined' || n4 === null) ||
+                (typeof n5 === 'undefined' || n5 === null))
+                return res.status(400).send('Set all values');
+            if (typeof n1 !== 'number' ||
+                typeof n2 !== 'number' ||
+                typeof n3 !== 'number' ||
+                typeof n4 !== 'number' ||
+                typeof n5 !== 'number')
+                return res.status(400).send('Just numbers allowed');
             try {
                 if (!((yield pgConnection_1.default.query(queries_1.default.getById, [id])).rows[0])) {
-                    return res.status(400).send('Student not exists');
+                    return res.status(404).send('Student not exists');
                 }
                 const newMedia = ((n1 + n2 + n3 + n4 + n5) / 5).toFixed(2);
                 yield pgConnection_1.default.query(queries_1.default.updateGrades, [id, n1, n2, n3, n4, n5, newMedia]);
+                //update class avarage
+                const getClass = (yield pgConnection_1.default.query(queries_1.default.getStudentClassById, [id]))
+                    .rows[0];
+                console.log(getClass);
+                console.log(getClass.students_id.length);
+                let classSum = 0;
+                for (let student of getClass.students_id) {
+                    const studentGrade = (yield pgConnection_1.default.query(queries_1.default.studentGrade, [student])).rows[0].media;
+                    classSum += studentGrade;
+                }
+                console.log(classSum);
+                const newClassAvarage = classSum / getClass.students_id.length;
+                yield pgConnection_1.default.query(queries_1.default.updateClassAvarage, [getClass.name, newClassAvarage]);
             }
             catch (err) {
                 console.log(err);
@@ -158,7 +175,7 @@ class StudentController {
                 return res.status(400).send('Only numbers are allowed');
             const student = (yield pgConnection_1.default.query(queries_1.default.getOneById, [id])).rows[0];
             if (!student)
-                return res.status(400).send('Student not exists');
+                return res.status(404).send();
             return res.json(student);
         });
     }
@@ -221,6 +238,9 @@ class StudentController {
                 return res.status(401).send('Only directors can create a new class');
             if (name.length > 15)
                 return res.status(400).send('Name up to 15 characters');
+            const classExists = (yield pgConnection_1.default.query(queries_1.default.getClassByName, [name])).rows[0];
+            if (classExists)
+                return res.status(400).send('This class already exists');
             let classesCount;
             try {
                 yield pgConnection_1.default.query(queries_1.default.createNewClass, [name]);
@@ -244,7 +264,7 @@ class StudentController {
     }
     seePerfilByEmail(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { email } = req.body;
+            const { email } = req.query;
             const studentPerfil = (yield pgConnection_1.default.query(queries_1.default.getStudentPerfil, [email])).rows[0];
             const teamPerfil = (yield pgConnection_1.default.query(queries_1.default.getTeamPerfil, [email])).rows[0];
             if (studentPerfil)

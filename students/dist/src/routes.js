@@ -26,6 +26,7 @@ class Routes {
         this.router.post('/message', verifyJWT_1.verifyJWT, messageController_1.default.send);
         this.router.get('/message', verifyJWT_1.verifyJWT, messageController_1.default.see);
         this.router.get('/photos', verifyJWT_1.verifyJWT, photosController_1.default.getAll);
+        this.router.get('/photos/user', verifyJWT_1.verifyJWT, photosController_1.default.getUserPhotos);
         this.router.post('/photos', verifyJWT_1.verifyJWT, photosController_1.default.create);
         this.router.delete('/photos/:id', verifyJWT_1.verifyJWT, photosController_1.default.deleteById);
         this.router.put('/profilePhoto', verifyJWT_1.verifyJWT, photosController_1.default.updateProfilePhoto);

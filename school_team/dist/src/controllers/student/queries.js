@@ -41,6 +41,7 @@ class Queries {
         this.getStudentClassById = 'SELECT * FROM classes WHERE $1 = ANY (students_id)';
         this.updateClassBecauseDelete = 'UPDATE classes SET student_count = student_count -1, students_id = $2 WHERE name = $1';
         this.updateClassAvarage = 'UPDATE classes SET avarage = $2 WHERE name = $1';
+        this.getClassByName = 'SELECT * FROM classes WHERE name = $1';
     }
 }
 exports.default = new Queries();
