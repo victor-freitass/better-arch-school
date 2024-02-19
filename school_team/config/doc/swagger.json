@@ -1,0 +1,961 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Better Arch School - School Team API",
+        "description": "Here is the side of school workers: Directors, coordinators and teachers. Each office has its authorizations.<br><br>Make sure the token (login) is present in all requests you make, or it will not be authorized.<br><br>To create the first director, so that from it you can create all other workers / students, you must include the password (boss_password) you created in your environment variable.",
+        "contact": {
+            "email": "victornuneswork1@gmail.com" 
+        },
+        "version": "2.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:3000",
+            "description": "School Team side"
+        }
+    ],
+    "paths": {
+        "/newteam-member": {
+            "post": {
+                "summary": "Signup - Create a new worker ( Director, Coordinator or Teacher )",
+                "description": "Only directors and coordinators (logged in with a token in Header > Authorization > Holder...) can register a new worker. If you are creating the FIRST worker now, set 'boss_password' in the json. It must be the same as what you entered in the environment variables. This means that he is the first DIRECTOR, the owner of the school.<br>Then do SIGNIN and get the token. With the token you can remove 'boss_password'. .<br><br>And from there you can do everything else: (create more workers, students, etc.).Set a photo from imgur.com. Check if it is valid. Open at: https://i.imgur.com/9f6538R.png and get the link.",
+                "tags": ["Worker"],
+                "parameters": [
+                    {
+                        "name": "Auth",
+                        "in": "header",
+                        "description": "Token JWT Put - Bearer (token)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Worker Create"
+                            }
+                        },
+                        "exemples": {
+                            "Signup": {
+                                "value": {
+                                    "user_name": "karen",
+                                    "office": "teacher",
+                                    "profile_photo": "https://i.imgur.com/9f6538R.png",
+                                    "email": "karen@gmail.com",
+                                    "password": "karen-password"
+                                }
+                            },
+                            "First Signup (boss_password)": {
+                                "value": {
+                                    "user_name": "joseph",
+                                    "office": "director",
+                                    "profile_photo": "https://i.imgur.com/9f6538R.png",
+                                    "email": "joseph@gmail.com",
+                                    "password": "joseph-password",
+                                    "boss_password": "Value in your environment valiable (.env)"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Worker created successfully"
+                    },
+                    "400": {
+                        "description": "Set all infos | Value to 'office' not allowed | Email or user_name already exists | Invalid email | Imgur error - Photo is not valid or not exists"
+                    },
+                    "401": {
+                        "description": "Teachers are not allowed to insert someone. Just directors and coordinators"
+                    }
+                    
+                }
+                
+            }
+        },
+        "/signin": {
+            "post": {
+                "summary": "Signin",
+                "description": "Do Signin and get the TOKEN for next requests",
+                "tags": ["Worker"],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Signin"
+                            }
+                        },
+                        "exemples": {
+                            "Signin": {
+                                "value": {
+                                    "email": "karen@gmail.com",
+                                    "password": "karen-password"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Not Founded"
+                    },
+                    "401": {
+                        "description": "Incorrect Password"
+                    }
+                }
+                
+            }
+        },
+        "/classes": {
+            "post": {
+                "summary": "Create Class",
+                "description": "You must create a class for add students later.",
+                "tags": ["Class"],
+                "parameters": [
+                    {
+                        "name": "Auth",
+                        "in": "header",
+                        "description": "Token JWT Put - Bearer (token)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Create Class"
+                            }
+                        },
+                        "exemples": {
+                            "Create class": {
+                                "value": {
+                                    "name": "class-a"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Class Created Successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "$ref": "#/components/schemas/CreateClassResponse"                                 
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Name up to 15 characters | Class already exists"
+                    },
+                    "401": {
+                        "description": "Only directors can create a new class"
+                    }
+                }
+            },
+            "get": {
+                "summary": "GET all classes",
+                "tags": ["Class"],
+                "parameters": [
+                    {
+                        "name": "Auth",
+                        "in": "header",
+                        "description": "Token JWT Put - Bearer (token)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ClassResponse"
+                                    }       
+                                }
+                            }
+                        }
+                    }
+                }
+            }            
+        },
+        "/student": {
+            "post": {
+                "summary": "Signup - Create a new Student",
+                "description": "Student creation. Read 'schema' for more information.<br><br>Directors and coordinators only.",
+                "tags": ["Student"],
+                "parameters": [
+                    {
+                        "name": "Auth",
+                        "in": "header",
+                        "description": "Token JWT Put - Bearer (token)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateStudentRequest"
+                            }
+                        },
+                        "examples": {
+                            "Create Student": {
+                                "value": {
+                                    "name": "victor",
+                                    "responsible_email": "victor-mom@gmail.com",
+                                    "n1": 7,
+                                    "n2": 10,
+                                    "n3": 9,
+                                    "n4": 8.5,
+                                    "n5": 9,
+                                    "student_class": "class-A",
+                                    "user_name": "victor-user-name",
+                                    "email": "victor@gmail.com",
+                                    "password": "victor-12345",
+                                    "profile_photo": "https://i.imgur.com/9f6538R.png"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Student Created Successfully!"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "errors": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "description": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "examples": {
+                            "errors": {
+                                "value": {
+                                    "errors": [
+                                        {
+                                            "description": "Non-existing class. Create a new class or check existing classes in GET /classes (GET ALL request)"
+                                        },
+                                        {
+                                            "description": "Class in the limit of students. Is not possible."
+                                        },
+                                        {
+                                            "description": "Invalid Email. Check email."
+                                        },
+                                        {
+                                            "description": "The same responsible email for more than one student is not allowed. Put another one."
+                                        },
+                                        {
+                                            "description": "Bio must be less than 30 characters."
+                                        },
+                                        {
+                                            "description": "Invalid imgur photo."
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not authorized for teachers."
+                    }
+                }
+                
+            }
+        },
+        "/student/all": {
+            "get": {
+                "summary": "GET all students",
+                "description": "GET all the information needed by the school about the student. There is no information about the student's social media, such as user_name, photos or anything like that",
+                "tags": ["Student"],
+                "parameters": [
+                    {
+                        "name": "Auth",
+                        "in": "header",
+                        "description": "Token JWT Put - Bearer (token)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/StudentGetAll"
+                                    }       
+                                }
+                            }
+                        }
+                    }
+                }
+            }   
+        },
+        "/student/perfil": {
+            "get": {
+                "summary": "GET Student Perfil",
+                "description": "Student/worker profile on social media.<br>For school-relevant information, such as grade and average, see other student GET requests.",
+                "tags": ["Student"],
+                "parameters": [
+                    {
+                        "name": "Auth",
+                        "in": "header",
+                        "description": "Token JWT Put - Bearer (token)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "description": "Email of the profile you want to see",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/StudentPerfil"
+                                    }       
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Founded"
+                    }
+                }
+            }   
+        },
+        "/student/{id}": {
+            "get": {
+                "summary": "Get student grades, average and assessment",
+                "description": "Get specific student - By your id. information needed by the school about the student, like GET ALL request",
+                "tags": ["Student"],
+                "parameters": [ 
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Student ID you want",
+                        "required": true
+                    },
+                    {
+                        "name": "Auth",
+                        "in": "header",
+                        "description": "Token JWT Put - Bearer (token)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "$ref": "#/components/schemas/Student"                                 
+                                }
+                            }
+                        }
+                    }, 
+                    "400": {
+                        "description": "This checks so that you don't put anything other than a number in the parameter."
+                    },
+                    "404": {
+                        "description": "Not Founded"
+                    }
+                }
+            },
+            "put": {
+                "summary": "Update student grades - By Id",
+                "description": "Just directors can change student grades.",
+                "tags": ["Student"],
+                "parameters": [ 
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Student ID you want",
+                        "required": true
+                    },
+                    {
+                        "name": "Auth",
+                        "in": "header",
+                        "description": "Token JWT Put - Bearer (token)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Student Update Grades"
+                            }
+                        },
+                        "examples": {
+                            "Update grades": {
+                                "value": {
+                                    "n1": 6.5,
+                                    "n2": 10,
+                                    "n3": 9,
+                                    "n4": 6,
+                                    "n5": 7
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "Updated Successfully"
+                    },
+                    "400": {
+                        "description": "Only numbers allowed. This happens if you are not a number in the parameter. It's Security."
+                    },
+                    "401": {
+                        "description": "Just directors can change student grades."
+                    },
+                    "404": {
+                        "description": "Not founded"
+                    }
+                }
+                
+            },
+            "delete": {
+                "summary": "Delete Student",
+                "description": "Just directors can delete a student - This will delete his enrollment, grades, photos, remove him from his friends list...<br>and any ties he has at the school.",
+                "tags": ["Student"],
+                "parameters": [
+                    {
+                        "name": "Auth",
+                        "in": "header",
+                        "description": "Token JWT Put - Bearer (token)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }, 
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Student ID you want",
+                        "required": true
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DirectorPasswordForDelete"
+                            }
+                        },
+                        "examples": {
+                            "Delete Student": {
+                                "value": {
+                                    "password": "karen-password"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "Student Deleted Successfully!"
+                    },
+                    "400": {
+                        "description": "Set the director password for delete a student | Only numbers allowed. This happens if you are not a number in the parameter. It's Security."
+                    }, 
+                    "401": {
+                        "description": "Just directors can delete a student | Incorrect password"
+                    },
+                    "404": {
+                        "description": "Not founded"
+                    }
+                }
+                
+            }
+        },
+        "/message": {
+            "get": {
+                "summary": "GET messages you received",
+                "description": "Get all the messages they've ever sent to you.<br>Only the ones they sent to you, not the ones you sent to someone else.",
+                "tags": ["Message"],
+                "parameters": [
+                    {
+                        "name": "Auth",
+                        "in": "header",
+                        "description": "Token JWT Put - Bearer (token)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "$ref": "#/components/schemas/SeeMessagesResponse"                                 
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Send Message to someone",
+                "description": "A school worker can send messages to anyone.<br>It doesn't have to be friends, like it is for students.<br><br>Enter the username + message you want to send.",
+                "tags": ["Message"],
+                "parameters": [
+                    {
+                        "name": "Auth",
+                        "in": "header",
+                        "description": "Token JWT Put - Bearer (token)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SendMessageRequest"
+                            }
+                        },
+                        "examples": {
+                            "SendMessageExample": {
+                                "value": {
+                                    "whoWillReceive": "victor-user-name",
+                                    "message": "Hi, victor! I need talk with you."
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Message Send Successfully!"
+                    },
+                    "400": {
+                        "description": "Set all infos."
+                    },
+                    "404": {
+                        "description": "Worker or Student not founded."
+                    }
+                }
+                
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Worker Create": {
+                "type": "object",
+                "properties": {
+                    "user_name": {
+                        "type": "string"
+                    },
+                    "office": {
+                        "type": "string"
+                    },
+                    "profile_photo": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Signin": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Create Class": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Class name",
+                        "example": "Class-A"
+                    }
+                }
+            },
+            "CreateClassResponse": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "class_count": {
+                        "type": "integer",
+                        "description": "Number of classes currently existing"
+                    }
+                } 
+            },
+            "ClassResponse": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "exemple": "class-A"
+                        },
+                        "student_count": {
+                            "type": "integer",
+                            "description": "Number of students in the class",
+                            "exemple": 10
+                        },
+                        "average": {
+                            "type": "number",
+                            "description": "Class Average - Based on each student's average",
+                            "exemple": 7.551
+                        },
+                        "students_id": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer",
+                                "description": "Each student (id) in class",
+                                "exemple": [1, 2, 3, 4, 10, 11, 15, 20, 25, 29]
+                            }
+                        }
+                    }
+                }
+            },
+            "CreateStudentRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "victor"
+                    },
+                    "responsible_email": {
+                        "type": "string",
+                        "format": "email",
+                        "description": "Responsible email. Is not allowed the same email for two students",
+                        "example": "victor-mom@gmail.com"
+                    },
+                    "n1": {
+                        "type": "number",
+                        "description": "Grade 1",
+                        "example": 7
+                    },
+                    "n2": {
+                        "type": "number",
+                        "description": "Grade 2",
+                        "example": 7.5
+                    },
+                    "n3": {
+                        "type": "number",
+                        "description": "Grade 3",
+                        "example": 8
+                    },
+                    "n4": {
+                        "type": "number",
+                        "description": "Grade 4",
+                        "example": 9.5
+                    },
+                    "n5": {
+                        "type": "number",
+                        "description": "Grade 5",
+                        "example": 6.25
+                    },
+                    "student_class": {
+                        "type": "string",
+                        "description": "The class he will belong to",
+                        "example": "Class-A"
+                    },
+                    "user_name": {
+                        "type": "string",
+                        "description": "User name in student's social media",
+                        "example": "victor-user-name"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "description": "Email for signin",
+                        "example": "victor@gmail.com"
+                    },
+                    "password": {
+                        "type": "string"
+                    },
+                    "profile_photo": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "Only imgur.com photos. Check if is valid!",
+                        "example": "https://i.imgur.com/9f6538R.png"
+                    },
+                    "bio": {
+                        "type": "string",
+                        "description": "It is not mandatory, like any other existing social media."
+                    }
+                },
+                "required": [
+                    "name",
+                    "responsible_email",
+                    "student_class",
+                    "user_name",
+                    "profile_photo",
+                    "n1",
+                    "n2",
+                    "n3",
+                    "n4",
+                    "n5",
+                    "email",
+                    "password"
+                ]
+            },
+            "StudentGetAll": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "integer",
+                            "exemple": 1
+                        },
+                        "name": {
+                            "type": "string",
+                            "exemple": "victor"
+                        },
+                        "responsible_email": {
+                            "type": "string",
+                            "exemple": "victor-mom@gmail.com"
+                        },
+                        "n1": {
+                            "type": "number",
+                            "exemple": 8
+                        },
+                        "n2": {
+                            "type": "number",
+                            "exemple": 7.5
+                        },
+                        "n3": {
+                            "type": "number",
+                            "exemple": 5.5
+                        },
+                        "n4": {
+                            "type": "number",
+                            "exemple": 9
+                        },
+                        "media": {
+                            "type": "number",
+                            "exemple": 7.5
+                        },
+                        "avaliacao": {
+                            "type": "number",
+                            "exemple": "APROVADO"
+                        }
+
+                    }
+                } 
+            },
+            "StudentPerfil": {
+                "type": "object",
+                "properties": {
+                    "user_name": {
+                        "type": "string"
+                    },
+                    "profile_photo": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string",
+                        "description": "May be null if the student does not have a bio",
+                        "exemple": "20y | Arizona guy | Soccer Player |..."
+                    }
+                }
+            },
+            "GetStudentPerfilByEmail": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "example": "victor@gmail.com"
+                    }
+                }
+            },
+            "Student": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "exemple": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "exemple": "victor"
+                    },
+                    "responsible_email": {
+                        "type": "string",
+                        "exemple": "victor-mom@gmail.com"
+                    },
+                    "n1": {
+                        "type": "number",
+                        "exemple": 8
+                    },
+                    "n2": {
+                        "type": "number",
+                        "exemple": 7.5
+                    },
+                    "n3": {
+                        "type": "number",
+                        "exemple": 5.5
+                    },
+                    "n4": {
+                        "type": "number",
+                        "exemple": 9
+                    },
+                    "media": {
+                        "type": "number",
+                        "exemple": 7.5
+                    },
+                    "avaliacao": {
+                        "type": "number",
+                        "exemple": "APROVADO"
+                    }
+                }
+            },
+            "Student Update Grades": {
+                "type": "object",
+                "properties": {
+                  "n1": {
+                    "type": "number"
+                  },
+                  "n2": {
+                    "type": "number"
+                  },
+                  "n3": {
+                    "type": "number"
+                  },
+                  "n4": {
+                    "type": "number"
+                  },
+                  "n5": {
+                    "type": "number"
+                  }
+                }
+            },
+            "DirectorPasswordForDelete": {
+                "type": "object",
+                "properties": {
+                    "password": {
+                        "type": "string",
+                        "description": "Set password for more security",
+                        "example": "karen-password"
+                    }
+                }
+            },
+            "SeeMessagesResponse": {
+                "type": "object",
+                "properties": {
+                    "seeMessages": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "whoSent": {
+                                    "type": "string",
+                                    "description": "Message sender name"
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "description": "Message Content"
+                                },
+                                "received_in": {
+                                    "type": "string",
+                                    "description": "Date and time the message was received"
+                                }
+                            },
+                            "required": ["whoSent", "message", "received_in"]
+                        }
+                    }
+                },
+                "required": ["seeMessages"]
+            },
+            "SendMessageRequest": {
+                "type": "object",
+                "properties": {
+                    "whoWillReceive": {
+                        "type": "string",
+                        "description": "user-name of the person who will receive the message",
+                        "exemple": "victor-user-name"
+                    },
+                    "message": {
+                        "type": "string",
+                        "description": "Message Content",
+                        "example": "Hi, Victor! How are you?"
+                    }
+                },
+                "required": ["whoWillReceive", "message"]
+            }
+            
+        }
+    }
+}

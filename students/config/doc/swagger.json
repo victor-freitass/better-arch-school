@@ -1,0 +1,804 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Better Arch School - Students API",
+        "description": "Student side.\nStudents can send messages to workers, chat with each other, post photos and more.\nAs if it were a social network for them.",
+        "contact": {
+            "email": "victornuneswork1@gmail.com" 
+        },
+        "version": "2.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8080",
+            "description": "Student Side"
+        }
+    ],
+    "paths": {
+        "/signin": {
+            "post": {
+                "summary": "Signin",
+                "tags": ["Student"],
+                "description": "GET the token for next requests (logged as this student)",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StudentSignin"
+                            }
+                        },
+                        "exemples": {
+                            "Signin": {
+                                "value": {
+                                    "email": "victor@gmail.com",
+                                    "password": "victor-password"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "$ref": "#/components/schemas/StudentSigninResponseToken"                                 
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Not Founded"
+                    },
+                    "401": {
+                        "description": "Incorrect Password"
+                    }
+                }
+                
+            }
+        },
+        "/student": {
+            "get": {
+                "summary": "GET all student information",
+                "description": "Important information for school, not social media",
+                "tags": ["Student"],
+                "parameters": [
+                    {
+                        "name": "Auth",
+                        "in": "header",
+                        "description": "Token JWT Put - Bearer (token)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "$ref": "#/components/schemas/StudentInfo"                                 
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/perfil": {
+            "get": {
+                "summary": "See perfil of someone",
+                "description": "A student can see the profile of school workers.<br><br>But to see the profile of other students, they must be friends.",
+                "tags": ["Student"],
+                "parameters": [
+                    {
+                        "name": "Auth",
+                        "in": "header",
+                        "description": "Token JWT Put - Bearer (token)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SeePerfilRequest"
+                            }
+                        },
+                        "exemples": {
+                            "PhotoCreate": {
+                                "value": {
+                                    "user_name": "karen"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "$ref": "#/components/schemas/SeePerfil"                                 
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "You are not friends. Send a friend request first."
+                    },
+                    "404": {
+                        "description": "Not Founded"
+                    }
+                }
+            }
+        },
+        "/photos": {
+            "post": {
+                "summary": "Create a photo",
+                "description": "Check if is valid and existing in imgur.com",
+                "tags": ["Photo"],
+                "parameters": [
+                    {
+                        "name": "Auth",
+                        "in": "header",
+                        "description": "Token JWT Put - Bearer (token)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PhotoCreate"
+                            }
+                        },
+                        "exemples": {
+                            "PhotoCreate": {
+                                "value": {
+                                    "url": "https://i.imgur.com/9f6538R.png"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Photo published successfully"
+                    },
+                    "400": {
+                        "description": "Set a url from imgur | Duplicate photos are not allowed | Invalid photo (imgur error) "
+                    }
+                }
+                
+            },
+            "get": {
+                "summary": "GET all",
+                "description": "All existing photos in DB",
+                "tags": ["Photo"],
+                "parameters": [
+                    {
+                        "name": "Auth",
+                        "in": "header",
+                        "description": "Token JWT Put - Bearer (token)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "$ref": "#/components/schemas/GetPhotosResponse"                                 
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/photos/user": {
+            "get": {
+                "summary": "GET Student Photos",
+                "description": "Just student photos",
+                "tags": ["Photo"],
+                "parameters": [
+                    {
+                        "name": "Auth",
+                        "in": "header",
+                        "description": "Token JWT Put - Bearer (token)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "$ref": "#/components/schemas/GetPhotosUserResponse"                             
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/photos/{id}": {
+            "delete": {
+                "summary": "Delete an photo - By Id",
+                "description": "The student manages to delete a photo of himself, by id in param.",
+                "tags": ["Photo"],
+                "parameters": [ 
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Photo ID you want to delete",
+                        "required": true
+                    },
+                    {
+                        "name": "Auth",
+                        "in": "header",
+                        "description": "Token JWT Put - Bearer (token)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Photo deleted successfully!"
+                    },
+                    "400": {
+                        "description": "Only numbers allowed. This happens if you are not a number in the parameter. It's Security."
+                    },
+                    "404": {
+                        "description": "Photo not founded (or this photo belongs to another student)"
+                    }
+                }
+                
+            }
+        },
+        "/profilePhoto": {
+            "put": {
+                "summary": "Update student profile photo",
+                "tags": ["Profile Photo"],
+                "parameters": [
+                    {
+                        "name": "Auth",
+                        "in": "header",
+                        "description": "Token JWT Put - Bearer (token)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProfilePhotoUpdate"
+                            }
+                        },
+                        "exemples": {
+                            "PhotoCreate": {
+                                "value": {
+                                    "url": "https://i.imgur.com/9f6538R.png"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "Profile Photo Updated Successfully"
+                    },
+                    "400": {
+                        "description": "Imgur photo invalid or not exists"
+                    }
+                }
+                
+            }
+        },
+        "/friends": {
+            "get": {
+                "summary": "GET all student friends",
+                "description": "list the user_name of this student's friends",
+                "tags": ["Friends"],
+                "parameters": [
+                    {
+                        "name": "Auth",
+                        "in": "header",
+                        "description": "Token JWT Put - Bearer (token)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "$ref": "#/components/schemas/GetAllFriends"                                 
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Do a friend request",
+                "description": "Send a friend request to another student.<br><br>The recipient student can see friend requests sent to them in the request below.",
+                "tags": ["Friends"],
+                "parameters": [
+                    {
+                        "name": "Auth",
+                        "in": "header",
+                        "description": "Token JWT Put - Bearer (token)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DoFriendRequest"
+                            }
+                        },
+                        "exemples": {
+                            "DoFriendRequest": {
+                                "value": {
+                                    "user_name": "victor-user-name"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "friendship request sent"
+                    },
+                    "400": {
+                        "description": "Set user_name to friend request You are already friends | Have you made this request before | He made the request to you before. Check your friend requests and accept "
+                    },
+                    "404": {
+                        "description": "Not Founded"
+                    }
+                }
+                
+            }
+        },
+        "/friends/requests": {
+            "get": {
+                "summary": "See friend requests sent to student",
+                "description": "GET all requests sent to this student. And accept the request below.",
+                "tags": ["Friends"],
+                "parameters": [
+                    {
+                        "name": "Auth",
+                        "in": "header",
+                        "description": "Token JWT Put - Bearer (token)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "$ref": "#/components/schemas/GetAllFriendRequests"                                 
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/friends/accept": {
+            "post": {
+                "summary":"Accept a friend request",
+                "description": "Enter the user_name of someone who sent you a friend request.<br>Check the request above and accept it here",
+                "tags": ["Friends"],
+                "parameters": [
+                    {
+                        "name": "Auth",
+                        "in": "header",
+                        "description": "Token JWT Put - Bearer (token)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AcceptFriendRequest"
+                            }
+                        },
+                        "exemples": {
+                            "DoFriendRequest": {
+                                "value": {
+                                    "user_name": "victor-user-name"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "friendship request sent"
+                    },
+                    "400": {
+                        "description": "No one pending request for you"
+                    },
+                    "404": {
+                        "description": "This friend request not exists"
+                    }
+                }
+            }
+        },
+        "/message": {
+            "get": {
+                "summary": "GET all messages to you",
+                "description": "all the messages they've ever sent you",
+                "tags": ["Messages"],
+                "parameters": [
+                    {
+                        "name": "Auth",
+                        "in": "header",
+                        "description": "Token JWT Put - Bearer (token)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "$ref": "#/components/schemas/GetAllMessages"                                 
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "send a message",
+                "tags": ["Messages"],
+                "parameters": [
+                    {
+                        "name": "Auth",
+                        "in": "header",
+                        "description": "Token JWT Put - Bearer (token)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SendMessage"
+                            }
+                        },
+                        "exemples": {
+                            "SendMessage": {
+                                "value": {
+                                    "whoWillReceive": "karen-user-name",
+                                    "message": "Hi, karen!"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Message sent!"
+                    },
+                    "400": {
+                        "description": "Set who will receive and the message | You are not friends. Send a friend request first."
+                    },
+                    "404": {
+                        "description": "Student or Worker not founded"
+                    }
+                }
+                
+            }
+            
+        }
+    },
+    "components": {
+        "schemas": {
+            "StudentInfo": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "responsible_email": {
+                        "type": "string",
+                        "format": "email",
+                        "description": "Email of the student's guardian"
+                    },
+                    "n1": {
+                        "type": "number",
+                        "description": "Grade 1"
+                    },
+                    "n2": {
+                        "type": "number",
+                        "description": "Grade 2"
+                    },
+                    "n3": {
+                        "type": "number",
+                        "description": "Grade 3"
+                    },
+                    "n4": {
+                        "type": "number",
+                        "description": "Grade 4"
+                    },
+                    "n5": {
+                        "type": "number",
+                        "description": "Grade 5"
+                    },
+                    "media": {
+                        "type": "number",
+                        "description": "Student avarage"
+                    },
+                    "avaliacao": {
+                        "type": "string",
+                        "description": "Student evaluation - <br><br>Below 4 = failed<br>Below 6 = Recovery<br>6 or more = Approved"
+                    }
+                }
+            },
+            "StudentSigninResponseToken": {
+                "type": "string",
+                "description": "Token for next requests",
+                "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXlsb2FkIjp7Im9mZmljZSI6ImRpcmVjdG9yIiwiZW1haWwiOiJzaWx2aWFAZ21haWwuY29tIiwidXNlcl9uYW1lIjoic2lsdmlhIn0sImlhdCI6MTcwODM0OTQ4MiwiZXhwIjoxNzA4NDM1ODgyfQ.28HgQRUERklGVtqyt0wLwpJiPuuE27HsOQ1QvS3B2SY"
+            },
+            "StudentSignin": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "victor@gmail.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "example": "victor-password"
+                    }
+                },
+                "required": ["email", "password"]
+            },
+            "SeePerfilRequest": {
+                "type": "object",
+                "properties": {
+                    "user_name": {
+                        "type": "string"
+                    }
+                }
+            },
+            "SeePerfil": {
+                "type": "object",
+                "properties": {
+                    "user_name": {
+                        "type": "string"
+                    },
+                    "profile_photo": {
+                        "type": "string",
+                        "format": "uri"
+                    },
+                    "bio": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                }
+            },
+            "PhotoCreate": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "example": "https://i.imgur.com/9f6538R.png",
+                        "description": "Check if exists and valid"
+                    }
+                },
+                "required": [
+                    "url"
+                ]
+            },
+            "GetPhotosResponse": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "integer",
+                            "description": "photo id",
+                            "example": 1
+                        },
+                        "url": {
+                            "type": "string",
+                            "format": "uri",
+                            "description": "Photo URL",
+                            "example": "https://i.imgur.com/9f6538R.png"
+                        },
+                        "createdat": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "Photo creation date and time"
+                        },
+                        "user_name": {
+                            "type": "string",
+                            "description": "Photo owner",
+                            "example": "victor-user-name"
+                        }
+                    }
+                }
+            },
+            "GetUserPhotosResponse": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "integer",
+                            "description": "photo id",
+                            "example": 1
+                        },
+                        "url": {
+                            "type": "string",
+                            "format": "uri",
+                            "description": "Photo URL",
+                            "example": "https://i.imgur.com/9f6538R.png"
+                        },
+                        "createdat": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "Photo creation date and time"
+                        }
+                    }
+                }
+            },
+            "ProfilePhotoUpdate": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "url"
+                ]
+            },
+            "GetAllFriends": {
+                "type": "object",
+                "properties": {
+                    "friends": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "description": "Friend user_name",
+                            "example": ["jason-user-name", "annie-user-name"]
+                        }
+                    }
+                }
+            },
+            "GetAllFriendRequests": {
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "description": "Student user_name",
+                    "example": ["yoshi-user-name", "klaus-user-name"]
+                }
+            },
+            "DoFriendRequest": {
+                "type": "object",
+                "properties": {
+                    "user_name": {
+                        "type": "string",
+                        "description": "user_name to send your friend request",
+                        "exemple": "mario-user-name"
+                    }
+                },
+                "required": ["user_name"]
+            },
+            "AcceptFriendRequest": {
+                "type": "object",
+                "properties": {
+                    "user_name": {
+                        "type": "string",
+                        "description": "user-name to accept",
+                        "example": "yoshi-user-name"
+                    }
+                },
+                "required": ["user_name"]
+            },
+            "GetAllMessages": {
+                "type": "object",
+                "properties": {
+                    "whoSent": {
+                        "type": "string",
+                        "description": "Who sent the message to the student",
+                        "example": "peach-user-name"
+                    },
+                    "message": {
+                        "type": "string",
+                        "description": "Message Content",
+                        "example": "Hi, Victor! How are you?"
+                    },
+                    "received_in": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Data e hora de recebimento da mensagem no formato ISO 8601",
+                        "example":  "Fri Feb 16 2024 20:35:15 GMT+0000 (Coordinated Universal Time)"
+                    }
+                }
+            },
+            "SendMessage": {
+                "type": "object",
+                "properties": {
+                    "whoWillReceive": {
+                        "type": "string",
+                        "description": "Who will receive the message",
+                        "example": "peach-user-name"
+                    },
+                    "message": {
+                        "type": "string",
+                        "description": "Message content",
+                        "example": "Hi, peach! I am fine"
+                    }
+                },
+                "required": ["whoWillReceive", "message"]
+            }
+        }
+    }
+}
