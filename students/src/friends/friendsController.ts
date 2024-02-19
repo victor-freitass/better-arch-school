@@ -13,7 +13,7 @@ class FriendsController {
 
         const checkIfExists = (await client.query(queries.checkIfExists, 
             [user_nameToRequestFriend])).rows[0];
-        if (!checkIfExists) return res.status(400).send('This student not exists');
+        if (!checkIfExists) return res.status(404).send();
 
         const alreadyAreFriends = (await client.query(queries.checkAlreadyFriends, 
             [requesterUser_name, user_nameToRequestFriend])).rows[0];
@@ -49,7 +49,7 @@ class FriendsController {
         const requesterUser_name = ((req as CustomRequest).token as JwtPayload).payload.user_name;
         const requests = (await client.query(queries.getFriendRequests, [requesterUser_name])).rows;
         
-        return res.json(requests[0].friend_requests || 'No requests now');
+        return res.json(requests[0].friend_requests);
     }
 
     async getAllFriends (req: Request, res: Response) {
@@ -90,7 +90,7 @@ class FriendsController {
             return res.status(400).send('No one pending request for you');
         }
         
-        if (!thisReqExists) return res.status(400).send('This friend request not exists');
+        if (!thisReqExists) return res.status(404).send('This friend request not exists');
         return res.status(201).send('Request accepted');
     } 
 }
