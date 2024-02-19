@@ -7,6 +7,9 @@ import client from './config/database/pgConnection';
 
 import mongoose from 'mongoose';
 
+import swaggerUi from 'swagger-ui-express';
+import swaggetJson from '../config/doc/swagger.json';
+
 const { MONGO_USER, MONGO_PASS, MONGO_HOST, MONGO_PORT, MONGO_NAME } = process.env;
 
 class App {
@@ -21,6 +24,7 @@ class App {
 
     middlewares () {
         this.express.use(express.json());
+        this.express.use("/api-documentation", swaggerUi.serve, swaggerUi.setup(swaggetJson));
     }
 
     routes () { 

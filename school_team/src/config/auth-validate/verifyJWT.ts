@@ -9,7 +9,15 @@ interface CustomRequest extends Request {
 }
 
 function verifyJWT (req: Request, res: Response, next: NextFunction) {
-    const token = req.headers['authorization']?.replace('Bearer ', ''); 
+    let token: string | undefined; 
+
+    const auth = (req.headers['auth']); //In Swagger 
+    if(typeof auth === "string") {  
+        token = auth.replace('Bearer ', ''); 
+    } else {
+        token = (req.headers['authorization']?.replace('Bearer ', ''));
+    }
+
     let block = false;
 
     if(!token) {
