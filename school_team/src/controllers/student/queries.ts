@@ -46,6 +46,7 @@ class Queries {
     getStudentClassById = 'SELECT * FROM classes WHERE $1 = ANY (students_id)';
     updateClassBecauseDelete = 'UPDATE classes SET student_count = student_count -1, students_id = $2 WHERE name = $1';
     updateClassAvarage = 'UPDATE classes SET avarage = $2 WHERE name = $1';
+    getClassByName = 'SELECT * FROM classes WHERE name = $1';
 }
 
 export default new Queries();

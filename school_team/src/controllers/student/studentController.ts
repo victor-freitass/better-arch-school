@@ -74,9 +74,7 @@ class StudentController {
                 avarage = Number(media);
             } else {
                 const promises = getClass.students_id.map(async (id:number) => {
-                    console.log(id)
                     const result = await client.query(queries.studentGrade, [id]);
-                    console.log(result.rows)
                     return result.rows[0].media;
                 });
                 
@@ -108,7 +106,6 @@ class StudentController {
 
             if (whatIsError === 1) {
                 await client.query(queries.deleteNewStudent, [newStudentId]);
-                console.log(error);
                 return res.status(500).send();
             }
 
@@ -150,21 +147,45 @@ class StudentController {
         if (office !== 'director') return res.status(401).send('Only directors can change grades');
 
         if (
-            !(
-                (n1 || n1 === 0) &&
-                (n2 || n2 === 0) &&
-                (n3 || n3 === 0) &&
-                (n4 || n4 === 0))
-        ) return ('Set all grades to update');
+            (typeof n1 === 'undefined' || n1 === null) ||
+            (typeof n2 === 'undefined' || n2 === null) ||
+            (typeof n3 === 'undefined' || n3 === null) ||
+            (typeof n4 === 'undefined' || n4 === null) ||
+            (typeof n5 === 'undefined' || n5 === null)
+        ) return res.status(400).send('Set all values');
 
+        if (
+            typeof n1 !== 'number' || 
+            typeof n2 !== 'number' || 
+            typeof n3 !== 'number' ||
+            typeof n4 !== 'number' ||
+            typeof n5 !== 'number' 
+        ) return res.status(400).send('Just numbers allowed');
+        
         try {
             if (!((await client.query(queries.getById, [id])).rows[0])) {
-                return res.status(400).send('Student not exists');
+                return res.status(404).send('Student not exists');
             }
             const newMedia = ((n1 + n2 + n3 + n4 + n5) / 5).toFixed(2);
 
             await client.query(queries.updateGrades, [id, n1, n2, n3, n4, n5, newMedia]);
 
+            //update class avarage
+            const getClass = (await client.query(queries.getStudentClassById, [id]))
+                .rows[0];
+            console.log(getClass);
+            console.log(getClass.students_id.length);
+
+            let classSum = 0;
+            for (let student of getClass.students_id) {
+                const studentGrade = (await client.query(queries.studentGrade, 
+                    [student])).rows[0].media;
+                classSum += studentGrade;
+            }
+            console.log(classSum)
+
+            const newClassAvarage = classSum / getClass.students_id.length;
+            await client.query(queries.updateClassAvarage, [getClass.name, newClassAvarage]);
         } catch (err) {
             console.log(err);
             return res.status(500).send('Sorry, Internal Server Error :(')
@@ -183,7 +204,7 @@ class StudentController {
         if (Number.isNaN(Number(id))) return res.status(400).send('Only numbers are allowed');
 
         const student = (await client.query(queries.getOneById, [id])).rows[0];
-        if(!student) return res.status(400).send('Student not exists');
+        if(!student) return res.status(404).send();
         return res.json(student);
     }
 
@@ -250,7 +271,10 @@ class StudentController {
         const { name } = req.body;
         
         if (office !== 'director') return res.status(401).send('Only directors can create a new class');
-        if (name.length > 15) return res.status(400).send('Name up to 15 characters') 
+        if (name.length > 15) return res.status(400).send('Name up to 15 characters');
+        
+        const classExists = (await client.query(queries.getClassByName, [name])).rows[0];
+        if (classExists) return res.status(400).send('This class already exists')
 
         let classesCount: number;
         try {
@@ -273,8 +297,7 @@ class StudentController {
     }
 
     async seePerfilByEmail (req: Request, res: Response) {
-        const { email } = req.body;
-
+        const { email } = req.query;
         const studentPerfil = (await client.query(queries.getStudentPerfil, [email])).rows[0];
         const teamPerfil = (await client.query(queries.getTeamPerfil, [email])).rows[0];
 
