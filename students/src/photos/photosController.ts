@@ -28,11 +28,16 @@ class PhotoController {
         return res.status(201).send('Photo published successfully!');
     }
 
-    async getAll (req: Request, res: Response) {
+    async getUserPhotos (req: Request, res: Response) {
         const user_name = ((req as CustomRequest).token as JwtPayload).payload.user_name;
-        const allPhotos = (await client.query(queries.getAll, [user_name])).rows;
+        const allPhotos = (await client.query(queries.getUserPhotos, [user_name])).rows;
 
         return res.json(allPhotos);
+    }
+
+    async getAll (req: Request, res: Response) {
+        const userPhotos = (await client.query(queries.getAll)).rows;
+        return res.json(userPhotos)
     }
 
     async deleteById (req: Request, res: Response) {
@@ -56,8 +61,7 @@ class PhotoController {
             return res.status(400).send(msg);
         }
 
-        const upResponse = (await client.query(queries.updateProfile, [url, user_name])).rows[0];
-        if (!upResponse) return res.status(404).send();
+        await client.query(queries.updateProfile, [url, user_name]);
         
         return res.status(204).send('Profile photo updated successfully');
     }
